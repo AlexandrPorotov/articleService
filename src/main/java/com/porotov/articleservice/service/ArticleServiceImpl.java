@@ -1,0 +1,112 @@
+package com.porotov.articleservice.service;
+
+import com.porotov.articleservice.DTO.articleDTO.ArticleCreationDTO;
+import com.porotov.articleservice.DTO.articleDTO.ArticleDTO;
+import com.porotov.articleservice.DTO.articleDTO.ArticleMapper;
+import com.porotov.articleservice.model.Article;
+import com.porotov.articleservice.repository.ArticleRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@AllArgsConstructor
+public class ArticleServiceImpl implements ArticleService {
+
+    private final   ArticleRepository articleRepository;
+    private final ArticleMapper articleMapper;
+
+
+
+    @Override
+    public Optional<ArticleDTO> saveArticle(ArticleCreationDTO articleCreationDTO) {
+
+        Article article = articleMapper.toArticle(articleCreationDTO);
+        Optional<Article> savedArticle = articleRepository.findArticleByUrl(article.getUrl());
+
+        if(savedArticle.isPresent()){
+            savedArticle = Optional.empty();
+        } else {
+            articleRepository.save(article);
+        }
+
+        return savedArticle.map(articleMapper::toDTO);
+
+    }
+
+    @Override
+    public List<ArticleDTO> getAllArticles() {
+        return articleRepository.findAll().stream().map(articleMapper::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<ArticleDTO> getArticleByID(Long id) {
+
+        Optional<ArticleDTO> articleFromDB = articleRepository.findById(id).map(articleMapper::toDTO);
+
+        if(articleFromDB.isEmpty()){
+            articleFromDB = Optional.empty();
+        }
+
+        return articleFromDB;
+    }
+
+    @Override
+    public ArticleDTO updateArticle(ArticleDTO updatedArticleDTO) {
+        return articleMapper.toDTO(articleRepository.save(articleMapper.toArticle(updatedArticleDTO)));
+    }
+
+    @Override
+    public void deleteArticle(Long id) {
+        articleRepository.deleteById(id);
+    }
+
+    @Override
+    public List<ArticleDTO> saveAllArticles(List<ArticleCreationDTO> articleCreationDTOList) {
+
+        List<ArticleDTO> outPutList = new ArrayList<>();
+
+        for(ArticleCreationDTO articleCreationDTO : articleCreationDTOList) {
+            Optional<Article> savedArticle = articleRepository.findArticleByUrl(articleCreationDTO.getUrl());
+            if(savedArticle.isEmpty()){
+                Article article = articleMapper.toArticle(articleCreationDTO);
+                articleRepository.save(article);
+                outPutList.add(articleMapper.toDTO(article));
+            }
+        }
+
+        return outPutList;
+    }
+
+    @Override
+    public Optional<ArticleDTO> getRecentArticle() {
+
+        Article recentArticle = articleRepository.getRecentArticle().get(0);
+
+        recentArticle.setDateTime(LocalDateTime.now());
+        recentArticle.setCounter(recentArticle.getCounter()+1);
+        recentArticle.setMarker(true);
+
+        articleRepository.save(recentArticle);
+
+        return Optional.of(articleMapper.toDTO(recentArticle));
+
+    }
+
+    @Override
+    public Optional<ArticleDTO> getArticleByUrl(String url)  {
+
+        Optional<ArticleDTO> responseArticle = articleRepository.findArticleByUrl(url).map(articleMapper::toDTO);
+
+        if(responseArticle.isEmpty()) {
+            responseArticle = Optional.empty();
+        }
+
+        return responseArticle ;
+    }
+}

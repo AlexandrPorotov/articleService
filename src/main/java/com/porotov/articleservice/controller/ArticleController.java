@@ -1,58 +1,108 @@
 package com.porotov.articleservice.controller;
 
-import com.porotov.articleservice.DTO.ArticleDTO.ArticleCreationDTO;
-import com.porotov.articleservice.DTO.ArticleDTO.ArticleDTO;
-import com.porotov.articleservice.DTO.ArticleDTO.ArticleIdDTO;
-import com.porotov.articleservice.DTO.ArticleDTO.ArticleMapper;
-import com.porotov.articleservice.service.ArticleService;
+import com.porotov.articleservice.DTO.articleDTO.ArticleCreationDTO;
+import com.porotov.articleservice.DTO.articleDTO.ArticleDTO;
+import com.porotov.articleservice.DTO.articleDTO.ArticleIdDTO;
+import com.porotov.articleservice.DTO.articleDTO.ArticleMapper;
+import com.porotov.articleservice.service.ArticleServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**@author Alexandr Porotov
  * @version 1.0.0 pre-alpha
+ * @see ArticleServiceImpl
+ * @see ArticleMapper
  * */
 @RestController
-@RequestMapping("articles/")
+@RequestMapping("api/articles/")
 @AllArgsConstructor
 public class ArticleController {
 
-    private final ArticleService articleService;
+    private final ArticleServiceImpl articleService;
     private final ArticleMapper articleMapper;
 
+    /**<p>GET - запрос. Возвращает Article, выборка происходит по полям Article.dataTime и Article.counter</p>*/
     @GetMapping("recent")
-    public ArticleDTO getIdRecentArticle() {
-        return articleMapper.toDTO(articleService.getIdRecentArticle());
+    public ResponseEntity<ArticleDTO> getRecentArticle() {
+        return articleService.getRecentArticle()
+                .map(ResponseEntity::ok)
+                .orElseGet(()->ResponseEntity.notFound().build());
     }
 
     /**@param url String
      * <p>GET- запрос. Получает параметром строку url, передает в ArticleService. Возвращает id записи в БД.
      * Поиск происходит по полю Article.url</p>
      * @see ArticleIdDTO
-     * @see ArticleService*/
+     * @see ArticleServiceImpl */
     @GetMapping(params = {"url"})
-    public ArticleIdDTO getArticleIdByUrl(@RequestParam(value = "url") String url) {
-        return new ArticleIdDTO(articleService.getArticleIdByUrl(url));
+    public ResponseEntity<ArticleIdDTO> getArticleIdByUrl(@RequestParam(value = "url") String url)  {
+
+        return articleService.getArticleByUrl(url)
+                .map(articleMapper::dtoToIdDto)
+                .map(ResponseEntity::ok)
+                .orElseGet(()->ResponseEntity.notFound().build());
     }
 
     /**
      * @param articleCreationDTOList List
      * <p>POST - запрос. Получает на вход JSON Array. Передает в ArticleService для записи данных в БД.
      *  В ArticleService производится проверка на уникальность по полю: Article.url</p>
-     * @see ArticleService
+     * @see ArticleServiceImpl
      * @see ArticleCreationDTO
      * @see com.porotov.articleservice.model.Article
      * */
-    @PostMapping
-    public void saveArticles(@RequestBody List<ArticleCreationDTO> articleCreationDTOList) {
-        articleService.saveArticles(articleCreationDTOList);
+    @PostMapping("all")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<ArticleDTO> saveArticles(@RequestBody List<ArticleCreationDTO> articleCreationDTOList) {
+        return articleService.saveAllArticles(articleCreationDTOList);
     }
 
-    //*изменение записи с обновлением даты
-    @PutMapping(params = {"id","field"})
-    public void changeArticle(HttpEntity<String> httpEntity, @RequestParam(value = "id") Long id, @RequestParam(value = "field") String field) {
+    /**@param articleCreationDTO ArticleCreationDTO
+     * <p>></p>*/
+    @PostMapping("one")
+    @ResponseStatus(HttpStatus.CREATED)
+    public HttpEntity<ArticleDTO> saveArticle(@RequestBody ArticleCreationDTO articleCreationDTO) {
+        return articleService.saveArticle(articleCreationDTO)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping
+    public List<ArticleDTO> getAllArticles(){
+        return articleService.getAllArticles();
+    }
+
+    @GetMapping({"{id}"})
+    public ResponseEntity<ArticleDTO> getArticleById(@PathVariable("id") Long id) {
+        return articleService.getArticleByID(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("{id}") // сохраняет новую запись, а не исправляет старую (исправить)
+    public ResponseEntity<ArticleDTO> changeArticle(@PathVariable("id") Long id, @RequestBody ArticleDTO articleDTO) {
+        return articleService.getArticleByID(id).map(savedArticle -> {
+            savedArticle.setTitle(articleDTO.getTitle());
+            savedArticle.setUrl(articleDTO.getUrl());
+
+            ArticleDTO updatedArticleDTO = articleService.updateArticle(savedArticle);
+            return new ResponseEntity<>(updatedArticleDTO, HttpStatus.OK);
+        })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteArticle(@PathVariable("id") Long id){
+
+        articleService.deleteArticle(id);
+
+        return new ResponseEntity<>("Article deleted successfully!", HttpStatus.OK);
+
     }
 
 }

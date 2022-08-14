@@ -1,7 +1,7 @@
 package com.porotov.articleservice.gson.Article;
 
 import com.google.gson.*;
-import com.porotov.articleservice.DTO.ArticleDTO.ArticleCreationDTO;
+import com.porotov.articleservice.DTO.articleDTO.ArticleCreationDTO;
 
 import java.lang.reflect.Type;
 

@@ -19,7 +19,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     Article getArticleByTitle(String title);
 
     @Query("SELECT article FROM Article article WHERE article.url = ?1")
-    Optional<Article> getArticleByUrl(String url);
+    Optional<Article> findArticleByUrl(String url);
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Modifying

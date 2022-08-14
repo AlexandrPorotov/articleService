@@ -1,4 +1,4 @@
-package com.porotov.articleservice.DTO.ArticleDTO;
+package com.porotov.articleservice.DTO.articleDTO;
 
 import com.porotov.articleservice.model.Article;
 import lombok.Data;
@@ -19,6 +19,24 @@ public class ArticleMapper {
 
         return articleDTO;
 
+    }
+
+    public ArticleIdDTO toIdDTO(Article article) {
+        return new ArticleIdDTO(article.getId());
+    }
+
+    public ArticleIdDTO dtoToIdDto(ArticleDTO articleDTO){
+        return new ArticleIdDTO(articleDTO.getId());
+    }
+
+    public Article toArticle(ArticleDTO articleDTO){
+
+        Article article = new Article();
+
+        article.setTitle(articleDTO.getTitle());
+        article.setUrl(articleDTO.getUrl());
+
+        return article;
     }
 
     public Article toArticle(ArticleCreationDTO articleCreateDTO){
