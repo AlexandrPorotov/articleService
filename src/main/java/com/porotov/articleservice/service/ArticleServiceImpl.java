@@ -27,15 +27,15 @@ public class ArticleServiceImpl implements ArticleService {
     public Optional<ArticleDTO> saveArticle(ArticleCreationDTO articleCreationDTO) {
 
         Article article = articleMapper.toArticle(articleCreationDTO);
-        Optional<Article> savedArticle = articleRepository.findArticleByUrl(article.getUrl());
+        Optional<Article> articleFromDB = articleRepository.findArticleByUrl(article.getUrl());
 
-        if(savedArticle.isPresent()){
-            savedArticle = Optional.empty();
+        if(articleFromDB.isPresent()){
+            articleFromDB = Optional.empty();
         } else {
-            articleRepository.save(article);
+            articleFromDB = Optional.of(articleRepository.save(article));
         }
 
-        return savedArticle.map(articleMapper::toDTO);
+        return articleFromDB.map(articleMapper::toDTO);
 
     }
 
@@ -58,7 +58,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public ArticleDTO updateArticle(ArticleDTO updatedArticleDTO) {
-        return articleMapper.toDTO(articleRepository.save(articleMapper.toArticle(updatedArticleDTO)));
+        return articleMapper.toDTO(articleRepository.updateArticle(updatedArticleDTO.getUrl(),updatedArticleDTO.getTitle(),updatedArticleDTO.getId()));
     }
 
     @Override

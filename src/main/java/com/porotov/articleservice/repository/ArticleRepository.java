@@ -31,4 +31,9 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     @Query("UPDATE Article article SET article.url = ?1 , article.dateTime = current_date WHERE article.id = ?2")
     void updateArticleUrlById(String url, Long id);
 
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Modifying
+    @Query("UPDATE Article article SET article.url = ?1 , article.title = ?2, article.dateTime = current_date WHERE article.id = ?3")
+    Article updateArticle(String url, String title, Long id);
+
 }

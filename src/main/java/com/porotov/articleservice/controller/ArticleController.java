@@ -6,12 +6,12 @@ import com.porotov.articleservice.DTO.articleDTO.ArticleIdDTO;
 import com.porotov.articleservice.DTO.articleDTO.ArticleMapper;
 import com.porotov.articleservice.service.ArticleServiceImpl;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**@author Alexandr Porotov
  * @version 1.0.0 pre-alpha
@@ -66,10 +66,11 @@ public class ArticleController {
      * <p>></p>*/
     @PostMapping("one")
     @ResponseStatus(HttpStatus.CREATED)
-    public HttpEntity<ArticleDTO> saveArticle(@RequestBody ArticleCreationDTO articleCreationDTO) {
-        return articleService.saveArticle(articleCreationDTO)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ArticleDTO> saveArticle(@RequestBody ArticleCreationDTO articleCreationDTO) {
+        Optional<ArticleDTO> savedArticle = articleService.saveArticle(articleCreationDTO);
+        return savedArticle
+                .map(articleDTO -> new ResponseEntity<>(articleDTO, HttpStatus.CREATED))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.CONFLICT));
     }
 
     @GetMapping
