@@ -12,14 +12,14 @@ import java.util.Optional;
 
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
-    @Query("SELECT article FROM Article article ORDER BY article.counter ASC, article.dateTime DESC")
+    @Query("SELECT article FROM Article article ORDER BY article.counter ASC, article.dateTime ASC")
     List<Article> getRecentArticle();
 
     @Query("SELECT article FROM Article article WHERE article.title = ?1")
     Article getArticleByTitle(String title);
 
     @Query("SELECT article FROM Article article WHERE article.url = ?1")
-    Optional<Article> getArticleByUrl(String url);
+    Optional<Article> findArticleByUrl(String url);
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Modifying
@@ -30,5 +30,10 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     @Modifying
     @Query("UPDATE Article article SET article.url = ?1 , article.dateTime = current_date WHERE article.id = ?2")
     void updateArticleUrlById(String url, Long id);
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Modifying
+    @Query("UPDATE Article article SET article.url = ?1 , article.title = ?2, article.dateTime = current_date WHERE article.id = ?3")
+    Article updateArticle(String url, String title, Long id);
 
 }

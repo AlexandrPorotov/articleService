@@ -1,12 +1,16 @@
 package com.porotov.articleservice.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Data;
+import lombok.*;
+import org.hibernate.Hibernate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Entity
 @Table(name = "articles")
 public class Article {
@@ -23,12 +27,24 @@ public class Article {
     private String url;
 
     @Column(name = "article_date")
-    private LocalDateTime dateTime;
+    private LocalDateTime dateTime = LocalDateTime.now();
 
     @Column(name = "article_counter")
-    private Long counter;
+    private Long counter = 0L;
 
     @Column(name = "article_marker")
-    private Boolean marker;
+    private Boolean marker = false;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Article article = (Article) o;
+        return id != null && Objects.equals(id, article.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

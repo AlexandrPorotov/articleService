@@ -1,4 +1,4 @@
-package com.porotov.articleservice.DTO.ArticleDTO;
+package com.porotov.articleservice.DTO.articleDTO;
 
 import lombok.Data;
 
