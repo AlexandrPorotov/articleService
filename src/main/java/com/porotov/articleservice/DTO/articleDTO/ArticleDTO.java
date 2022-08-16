@@ -15,4 +15,6 @@ public class ArticleDTO {
 
     private LocalDateTime dateTime;
 
+    private ArticleStatusDTO status;
+
 }

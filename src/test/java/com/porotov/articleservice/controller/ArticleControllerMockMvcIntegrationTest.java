@@ -1,7 +1,10 @@
 package com.porotov.articleservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonArray;
 import com.porotov.articleservice.DTO.articleDTO.ArticleCreationDTO;
+import com.porotov.articleservice.DTO.articleDTO.ArticleDTO;
 import com.porotov.articleservice.DTO.articleDTO.ArticleMapper;
 import com.porotov.articleservice.repository.ArticleRepository;
 import org.junit.jupiter.api.Test;
@@ -10,6 +13,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -29,7 +35,7 @@ class ArticleControllerMockMvcIntegrationTest {
 
 
     @Test
-    void saveArticle() throws Exception {
+    void givenArticle_whenAdd_thenStatus201andArticleReturned() throws Exception {
 
         ArticleCreationDTO articleCreationDTO = new ArticleCreationDTO();
         articleCreationDTO.setTitle("test - saveArticle" + Math.random()*1);
@@ -46,32 +52,31 @@ class ArticleControllerMockMvcIntegrationTest {
 
     }
 
+
     @Test
-    void getRecentArticle() {
+    void givenArticlesList_whenAdd_thenStatus201andArticlesListReturned() throws Exception {
+
+        List<ArticleCreationDTO> inPutListArticleCreationDto = new ArrayList<>();
+        for (int i = 0; i < 3; i++){
+            ArticleCreationDTO articleCreationDTO = new ArticleCreationDTO();
+            articleCreationDTO.setUrl("test - saveArticles " + i);
+            articleCreationDTO.setTitle("test - saveArticles " + i);
+            inPutListArticleCreationDto.add(articleCreationDTO);
+        }
+
+        mockMvc.perform(
+                post("/api/articles/all")
+                        .content(objectMapper.writeValueAsString(inPutListArticleCreationDto))
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isCreated())
+                .andExpect(content().json(objectMapper.writeValueAsString(inPutListArticleCreationDto)));
 
     }
 
-    @Test
-    void getArticleIdByUrl() {
-
-        ArticleCreationDTO articleCreationDTO = new ArticleCreationDTO();
-        articleCreationDTO.setTitle("test - getArticleIdByUrl" + Math.random()*1);
-        articleCreationDTO.setUrl("test - getArticleIdByUrl" + Math.random()*1);
-
-        Long id = articleRepository.save(articleMapper.toArticle(articleCreationDTO)).getId();
-
-    }
 
     @Test
-    void saveArticles() {
-    }
-
-    @Test
-    void getAllArticles() {
-    }
-
-    @Test
-    void getArticleById() throws Exception {
+    void givenId_whenGetExistingArticle_thenStatus200andArticleReturned() throws Exception {
 
         ArticleCreationDTO articleCreationDTO = new ArticleCreationDTO();
         articleCreationDTO.setTitle("test - getArticleById" + Math.random()*1);
@@ -89,11 +94,6 @@ class ArticleControllerMockMvcIntegrationTest {
 
     }
 
-    @Test
-    void changeArticle() {
-    }
 
-    @Test
-    void deleteArticle() {
-    }
+
 }

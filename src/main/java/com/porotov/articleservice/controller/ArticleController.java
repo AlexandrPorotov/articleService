@@ -35,15 +35,14 @@ public class ArticleController {
     }
 
     /**@param url String
-     * <p>GET- запрос. Получает параметром строку url, передает в ArticleService. Возвращает id записи в БД.
+     * <p>GET- запрос. Получает параметром строку url, передает в ArticleService. Возвращает ArticleDTO.
      * Поиск происходит по полю Article.url</p>
      * @see ArticleIdDTO
      * @see ArticleServiceImpl */
     @GetMapping(params = {"url"})
-    public ResponseEntity<ArticleIdDTO> getArticleIdByUrl(@RequestParam(value = "url") String url)  {
+    public ResponseEntity<ArticleDTO> getArticleByUrl(@RequestParam(value = "url") String url)  {
 
         return articleService.getArticleByUrl(url)
-                .map(articleMapper::dtoToIdDto)
                 .map(ResponseEntity::ok)
                 .orElseGet(()->ResponseEntity.notFound().build());
     }
@@ -51,7 +50,8 @@ public class ArticleController {
     /**
      * @param articleCreationDTOList List
      * <p>POST - запрос. Получает на вход JSON Array. Передает в ArticleService для записи данных в БД.
-     *  В ArticleService производится проверка на уникальность по полю: Article.url</p>
+     *  В ArticleService производится проверка на уникальность по полю: Article.url. Возвращает JSON array, со всеми
+     *  переданными объектами, с пометками - создано/уже есть в БД.</p>
      * @see ArticleServiceImpl
      * @see ArticleCreationDTO
      * @see com.porotov.articleservice.model.Article

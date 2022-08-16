@@ -3,6 +3,7 @@ package com.porotov.articleservice.service;
 import com.porotov.articleservice.DTO.articleDTO.ArticleCreationDTO;
 import com.porotov.articleservice.DTO.articleDTO.ArticleDTO;
 import com.porotov.articleservice.DTO.articleDTO.ArticleMapper;
+import com.porotov.articleservice.DTO.articleDTO.ArticleStatusDTO;
 import com.porotov.articleservice.model.Article;
 import com.porotov.articleservice.repository.ArticleRepository;
 import lombok.AllArgsConstructor;
@@ -51,6 +52,11 @@ public class ArticleServiceImpl implements ArticleService {
 
         if(articleFromDB.isEmpty()){
             articleFromDB = Optional.empty();
+        } else {
+            Article article = articleMapper.toArticle(articleFromDB.get());
+            article.setDateTime(LocalDateTime.now());
+            article.setCounter(article.getCounter()+1);
+            article.setMarker(true);
         }
 
         return articleFromDB;
@@ -76,7 +82,13 @@ public class ArticleServiceImpl implements ArticleService {
             if(savedArticle.isEmpty()){
                 Article article = articleMapper.toArticle(articleCreationDTO);
                 articleRepository.save(article);
-                outPutList.add(articleMapper.toDTO(article));
+                ArticleDTO articleDTO = articleMapper.toDTO(article);
+                articleDTO.setStatus(ArticleStatusDTO.CREATED);
+                outPutList.add(articleDTO);
+            } else {
+                ArticleDTO articleDTO = articleMapper.toDTO(savedArticle.get());
+                articleDTO.setStatus(ArticleStatusDTO.ALREADY_EXIST);
+                outPutList.add(articleDTO);
             }
         }
 

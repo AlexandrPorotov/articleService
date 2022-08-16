@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
-    @Query("SELECT article FROM Article article ORDER BY article.counter ASC, article.dateTime DESC")
+    @Query("SELECT article FROM Article article ORDER BY article.counter ASC, article.dateTime ASC")
     List<Article> getRecentArticle();
 
     @Query("SELECT article FROM Article article WHERE article.title = ?1")
