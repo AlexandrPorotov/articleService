@@ -1,0 +1,34 @@
+version: '3.5'
+
+services:
+  postgres:
+    build:
+      context: Docker/postgres
+      dockerfile: Dockerfile.development
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=Dale
+      - POSTGRES_DB=vv
+      - POSTGRES_PASSWORD=xDv_3t_o_pr
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+
+
+  service:
+    build:
+      context: Docker/service
+      dockerfile: Dockerfile.development
+    command: java -jar /article-service.jar
+    environment:
+      - PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres/vv
+      - JS_URL=http://localhost
+    image: 'article-service'
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  db-data:
